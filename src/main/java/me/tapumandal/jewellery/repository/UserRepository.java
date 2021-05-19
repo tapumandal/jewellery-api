@@ -1,11 +1,15 @@
 package me.tapumandal.jewellery.repository;
 
 import me.tapumandal.jewellery.entity.User;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.stereotype.Repository;
 
-public interface
-UserRepository extends Repository<User>{
+@Repository
+public interface UserRepository extends PagingAndSortingRepository<User, Integer> {
 
-    public boolean isUserExist(String userName);
-    public User getUserByUserName(String username);
-    public boolean foundRefCode(String refCode);
+    public User findByUsername(String userName);
+
+    @Query("SELECT u FROM User u WHERE u.isActive = 1")
+    public User findByIdIfActive(int id);
 }

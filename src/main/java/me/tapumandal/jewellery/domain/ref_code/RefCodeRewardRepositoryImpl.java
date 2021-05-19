@@ -134,11 +134,12 @@ public class RefCodeRewardRepositoryImpl implements RefCodeRewardRepository {
 
     @Override
     public RefCodeReward getRefCodeByCode(String refCode){
-        int userId = ApplicationPreferences.getUser().getId();
-        User user = userRepository.getById(userId);
-
-        String query = "FROM "+modelClassName+" R WHERE R.code = '"+refCode+"' AND R.code != '"+user.getRefCodeReward().getCode()+"' AND R.isActive = 1";
-        return (RefCodeReward) getSession().createQuery(query).uniqueResult();
+//        int userId = ApplicationPreferences.getUser().getId();
+//        User user = userRepository.getById(userId);
+//
+//        String query = "FROM "+modelClassName+" R WHERE R.code = '"+refCode+"' AND R.code != '"+user.getRefCodeReward().getCode()+"' AND R.isActive = 1";
+//        return (RefCodeReward) getSession().createQuery(query).uniqueResult();
+        return null;
     }
 
 }

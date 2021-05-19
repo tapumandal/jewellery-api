@@ -1,28 +1,23 @@
 package me.tapumandal.jewellery.service.implementation;
 
-import me.tapumandal.jewellery.entity.dto.ConsumerUserDto;
+import me.tapumandal.jewellery.entity.User;
 import me.tapumandal.jewellery.repository.RefCodeRepository;
 import me.tapumandal.jewellery.repository.UserRepository;
 import me.tapumandal.jewellery.util.ApplicationPreferences;
 import me.tapumandal.jewellery.util.MyPagenation;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import me.tapumandal.jewellery.domain.address.Address;
-import me.tapumandal.jewellery.domain.address.AddressDto;
 import me.tapumandal.jewellery.domain.address.AddressRepository;
 import me.tapumandal.jewellery.entity.ListFilter;
-import me.tapumandal.jewellery.domain.ref_code.RefCodeReward;
-import me.tapumandal.jewellery.entity.User;
-import me.tapumandal.jewellery.entity.dto.UserDto;
 import me.tapumandal.jewellery.service.UserService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,7 +51,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public ConsumerUserDto createUser(User user) {
+    public User createUser(User user) {
 
 //        True for ecommerce fron app.
 //        Make it conditional when mobile app is ready
@@ -69,7 +64,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ConsumerUserDto createAdminAccount(User utmp) {
+    public User createAdminAccount(User utmp) {
 
         User u = new User(utmp);
         u.setRole("ADMIN");
@@ -79,26 +74,13 @@ public class UserServiceImpl implements UserService {
         u = this.checkUsernameType(u);
 
 
-        Optional<User> user;
-//        try{
-        int userId = userRepository.create(u);
-
+        User user = userRepository.save(u);
         applicationPreferences.saveUserByUsername(u.getUsername());
 
-        user = Optional.ofNullable(userRepository.getById(userId));
-//        }catch (Exception e){
-//            return null;
-//        }
-
-        if(user.isPresent()){
-//            return user.get();
-            return null;
-        }else{
-            return null;
-        }
+        return user;
     }
 
-    private ConsumerUserDto createUserAccount(User user) {
+    private User createUserAccount(User user) {
         return null;
     }
 
@@ -169,16 +151,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ConsumerUserDto create(User u) {
+    public User create(User u) {
         return null;
     }
 
     @Override
-    public ConsumerUserDto update(User u) {
+    public User update(User u) {
 
 //        List<Address> children = new ArrayList<>();
 //
-//        ConsumerUserDto user = getById(u.getId());
+//        User user = getById(u.getId());
 //
 //        for (AddressDto dto : u.getAddresses()) {
 //            Address child;
@@ -214,37 +196,36 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<ConsumerUserDto> getAll(Pageable pageable, ListFilter listFilter) {
-        Optional<List<User>> products = Optional.ofNullable(userRepository.getAll(pageable, listFilter));
-
-        if(products.isPresent()){
-//            return products.get();
-            return null;
-        }else{
-            return null;
-        }
-    }
-
-
-    @Override
-    public ConsumerUserDto getById(int id) {
-        Optional<User> user = Optional.ofNullable(userRepository.getById(id));
-
-        if(user.isPresent()){
-//            return user.get();
-            return null;
-        }else{
-            return null;
-        }
-
+    public List<User> getAll(Pageable pageable, ListFilter listFilter) {
+        return null;
     }
 
     @Override
-    public ConsumerUserDto getUserByUserName(String username) {
-        Optional<User> user = Optional.ofNullable(userRepository.getUserByUserName(username));
+    public Page<User> getAllPageable(Pageable pageable) {
+
+        Pageable pageable1 = PageRequest.of(0, 3, Sort.by("id").descending());
+        Page<User> users = userRepository.findAll(pageable1);
+
+        return users;
+    }
+
+    @Override
+    public User getById(int id) {
+        Optional<User> user = userRepository.findById(id);
+
         if(user.isPresent()){
-//            return user.get();
+            return user.get();
+        }else{
             return null;
+        }
+
+    }
+
+    @Override
+    public User getUserByUserName(String username) {
+        Optional<User> user = Optional.ofNullable(userRepository.findByUsername(username));
+        if(user.isPresent()){
+            return user.get();
         }else{
             return null;
         }
@@ -253,28 +234,26 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean deleteById(int id) {
         try {
-            return userRepository.delete(id);
+            userRepository.deleteById(id);
+            return true;
         }catch (Exception ex){
             return false;
         }
     }
 
     @Override
-    public ConsumerUserDto getByValue(String key, String value) {
-        User user = userRepository.getByKeyAndValue(key, value).get(0);
-
-//        return user;
+    public User getByValue(String key, String value) {
         return null;
     }
 
     @Override
-    public List<ConsumerUserDto> getAllByValue(String kye, String value) {
+    public List<User> getAllByValue(String kye, String value) {
         return null;
     }
 
     @Override
     public boolean isActive(int id) {
-        Optional<User> user = Optional.ofNullable(userRepository.getById(id));
+        Optional<User> user = Optional.ofNullable(userRepository.findByIdIfActive(id));
         if(user.isPresent()){
             if(user.get().isActive()){
                 return true;
@@ -291,7 +270,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public MyPagenation getPageable(Pageable pageable) {
-        return userRepository.getPageable(pageable);
+//        return userRepository.getPageable(pageable);
+        return null;
     }
 
     @Override
@@ -300,7 +280,8 @@ public class UserServiceImpl implements UserService {
     }
 
     public boolean isUserExist(String userName){
-        return userRepository.isUserExist(userName);
+//        return userRepository.isUserExist(userName);
+        return false;
     }
 
     protected User checkUsernameType(User u){

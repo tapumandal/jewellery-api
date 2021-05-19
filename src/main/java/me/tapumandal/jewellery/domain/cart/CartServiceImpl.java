@@ -88,17 +88,17 @@ public class CartServiceImpl implements CartService {
             }
 
             int userId = ApplicationPreferences.getUser().getId();
-            User user = userRepository.getById(userId);
+//            User user = userRepository.getById(userId);
 
             //System.out.println("USER: "+new Gson().toJson(user));
 
-            user.getRefCodeReward().setFirstOrder(true);
-            if(user.getUserPromo() != null) {
-                if (user.getUserPromo().getType().equals("RefCode")) {
-                    user.getUserPromo().setActive(false);
-                }
-            }
-            userRepository.update(user);
+//            user.getRefCodeReward().setFirstOrder(true);
+//            if(user.getUserPromo() != null) {
+//                if (user.getUserPromo().getType().equals("RefCode")) {
+//                    user.getUserPromo().setActive(false);
+//                }
+//            }
+//            userRepository.update(user);
 
         }catch (Exception e){
             return null;
@@ -115,63 +115,59 @@ public class CartServiceImpl implements CartService {
 
     private boolean useAppliedPromoCode() {
 
-        int userId = ApplicationPreferences.getUser().getId();
-        User user = userRepository.getById(userId);
-        if(user.getUserPromo() == null){
-            return false;
-        }
-
-        if(user.getUserPromo().getType().equals("RefCode")) {
-            user.getUserPromo().setActive(false);
-            user.getRefCodeReward().setFirstOrder(true);
-            RefCodeReward refCodeReward = refCodeRewardRepository.getRefCodeByCode(user.getUserPromo().getCode());
-            //System.out.println("ReferredCodeReward B:"+ new Gson().toJson(refCodeReward));
-
-            BusinessSettings businessSettings = businessSettingsRepository.getById(0);
-
-            refCodeReward.setTotalCredit(refCodeReward.getTotalCredit()+businessSettings.getRefCodeReturnReward());
-            refCodeReward.setNumberOfReward(refCodeReward.getNumberOfReward()+1);
-            refCodeReward.setRewardAmountList((refCodeReward.getRewardAmountList()+","+businessSettings.getRefCodeReturnReward()).trim());
-
-            refCodeRewardRepository.update(refCodeReward);
-            //System.out.println("ReferredCodeReward A:"+ new Gson().toJson(refCodeReward));
-            return true;
-
-        }else if(user.getUserPromo().getType().equals("PromoCode")) {
-            Promotion promotion = promotionRepository.applyPromotion(user.getUserPromo().getCode());
-            promotion.setNumberOfApply(promotion.getNumberOfApply()+1);
-            promotionRepository.update(promotion);
-
-            user.getUserPromo().setActive(false);
-            userRepository.update(user);
-            return true;
-        }
+//        int userId = ApplicationPreferences.getUser().getId();
+//        User user = userRepository.getById(userId);
+//        if(user.getUserPromo() == null){
+//            return false;
+//        }
+//
+//        if(user.getUserPromo().getType().equals("RefCode")) {
+//            user.getUserPromo().setActive(false);
+//            user.getRefCodeReward().setFirstOrder(true);
+//            RefCodeReward refCodeReward = refCodeRewardRepository.getRefCodeByCode(user.getUserPromo().getCode());
+//            //System.out.println("ReferredCodeReward B:"+ new Gson().toJson(refCodeReward));
+//
+//            BusinessSettings businessSettings = businessSettingsRepository.getById(0);
+//
+//            refCodeReward.setTotalCredit(refCodeReward.getTotalCredit()+businessSettings.getRefCodeReturnReward());
+//            refCodeReward.setNumberOfReward(refCodeReward.getNumberOfReward()+1);
+//            refCodeReward.setRewardAmountList((refCodeReward.getRewardAmountList()+","+businessSettings.getRefCodeReturnReward()).trim());
+//
+//            refCodeRewardRepository.update(refCodeReward);
+//            //System.out.println("ReferredCodeReward A:"+ new Gson().toJson(refCodeReward));
+//            return true;
+//
+//        }else if(user.getUserPromo().getType().equals("PromoCode")) {
+//            Promotion promotion = promotionRepository.applyPromotion(user.getUserPromo().getCode());
+//            promotion.setNumberOfApply(promotion.getNumberOfApply()+1);
+//            promotionRepository.update(promotion);
+//
+//            user.getUserPromo().setActive(false);
+//            userRepository.update(user);
+//            return true;
+//        }
         return false;
     }
 
     private boolean useRefCodeReward() {
 
-        int userId = ApplicationPreferences.getUser().getId();
-        User user = userRepository.getById(userId);
-
-        RefCodeReward refCodeReward = user.getRefCodeReward();
-
-        //System.out.println("ReferredCodeReward B:"+ new Gson().toJson(refCodeReward));
-
-        BusinessSettings businessSettings = businessSettingsRepository.getById(0);
-
-        int amountCutt = (refCodeReward.getTotalCredit()-refCodeReward.getTotalAmountClaimed()) - businessSettings.getRefCodeCreditAmount();
-        if( amountCutt < 0 ){
-            amountCutt = (refCodeReward.getTotalCredit()-refCodeReward.getTotalAmountClaimed());
-        }else{
-            amountCutt = businessSettings.getRefCodeCreditAmount();
-        }
-//        refCodeReward.setTotalCredit(refCodeReward.getTotalCredit()-amountCutt);
-        refCodeReward.setNumberOfRewardClaim(refCodeReward.getNumberOfRewardClaim()+1);
-        refCodeReward.setTotalAmountClaimed(refCodeReward.getTotalAmountClaimed()+amountCutt);
-
-        refCodeRewardRepository.update(refCodeReward);
-        //System.out.println("ReferredCodeReward A:"+ new Gson().toJson(refCodeReward));
+//        int userId = ApplicationPreferences.getUser().getId();
+//        User user = userRepository.getById(userId);
+//
+//        RefCodeReward refCodeReward = user.getRefCodeReward();
+//
+//        BusinessSettings businessSettings = businessSettingsRepository.getById(0);
+//
+//        int amountCutt = (refCodeReward.getTotalCredit()-refCodeReward.getTotalAmountClaimed()) - businessSettings.getRefCodeCreditAmount();
+//        if( amountCutt < 0 ){
+//            amountCutt = (refCodeReward.getTotalCredit()-refCodeReward.getTotalAmountClaimed());
+//        }else{
+//            amountCutt = businessSettings.getRefCodeCreditAmount();
+//        }
+//        refCodeReward.setNumberOfRewardClaim(refCodeReward.getNumberOfRewardClaim()+1);
+//        refCodeReward.setTotalAmountClaimed(refCodeReward.getTotalAmountClaimed()+amountCutt);
+//
+//        refCodeRewardRepository.update(refCodeReward);
         return true;
     }
 

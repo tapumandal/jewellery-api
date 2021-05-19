@@ -84,60 +84,61 @@ public class PromotionServiceImpl implements PromotionService {
     @Override
     public UserPromo applyPromotion(String code) {
 
-        int userId = ApplicationPreferences.getUser().getId();
-        User user = userRepository.getById(userId);
-
-//        Check ReferredCode First
-        RefCodeReward refCodeReward = null;
-        if(!user.getRefCodeReward().isFirstOrder()) {
-            refCodeReward = refCodeRewardRepository.getRefCodeByCode(code);
-        }
-        //System.out.println("S RefCodeReward:"+new Gson().toJson(refCodeReward));
-
-        if(refCodeReward == null){
-            Promotion promotion = promotionRepository.applyPromotion(code);
-            //System.out.println("S promoCode:"+new Gson().toJson(promotion));
-
-            if(promotion != null){
-                //System.out.println("USER : "+new Gson().toJson(user));
-                UserPromo userPromo = new UserPromo();
-                if (user.getUserPromo() == null) {
-                    //System.out.println("IF: ");
-                    userPromo = new UserPromo(promotion);
-                }else if(!user.getUserPromo().getCodeList().contains(code)){
-                    //System.out.println("ELSE IF: ");
-                    userPromo = updateUserPromo(user.getUserPromo(), promotion);
-                }else{
-                    return null;
-                }
-
-                //System.out.println("userPromo : "+new Gson().toJson(userPromo));
-                user.setUserPromo(userPromo);
-//                userRepository.update(user);
-                return userRepository.getById(user.getId()).getUserPromo();
-            }else{
-                return null;
-            }
-        }else if(refCodeReward != null && user.getUserPromo() == null){
-//            user.getUserPromo() == null this check means the orderFirst == false
-            //System.out.println("ELSE IF");
-            UserPromo userPromo = new UserPromo();
-            userPromo = updateUserPromoWithRefCodeReward(userPromo, refCodeReward);
-            user.setUserPromo(userPromo);
-            userRepository.update(user);
-
-            return userRepository.getById(user.getId()).getUserPromo();
-//        If Yes Check First Order or Not //
-//        Update UserPromo Data //
-//        IF First make first order false //When Order
-//        Give Reward Who referred // When Order
-        }else{
-            //System.out.println("ELSE");
-            return null;
-        }
-//        Promotion promotion =  promotionRepository.applyPromotion(code);
-//        List<Promotion> promotionLists = new Gson().fromJson(promotion.getPromotion(), List.class);
-//        return null;
+//        int userId = ApplicationPreferences.getUser().getId();
+//        User user = userRepository.getById(userId);
+//
+////        Check ReferredCode First
+//        RefCodeReward refCodeReward = null;
+//        if(!user.getRefCodeReward().isFirstOrder()) {
+//            refCodeReward = refCodeRewardRepository.getRefCodeByCode(code);
+//        }
+//        //System.out.println("S RefCodeReward:"+new Gson().toJson(refCodeReward));
+//
+//        if(refCodeReward == null){
+//            Promotion promotion = promotionRepository.applyPromotion(code);
+//            //System.out.println("S promoCode:"+new Gson().toJson(promotion));
+//
+//            if(promotion != null){
+//                //System.out.println("USER : "+new Gson().toJson(user));
+//                UserPromo userPromo = new UserPromo();
+//                if (user.getUserPromo() == null) {
+//                    //System.out.println("IF: ");
+//                    userPromo = new UserPromo(promotion);
+//                }else if(!user.getUserPromo().getCodeList().contains(code)){
+//                    //System.out.println("ELSE IF: ");
+//                    userPromo = updateUserPromo(user.getUserPromo(), promotion);
+//                }else{
+//                    return null;
+//                }
+//
+//                //System.out.println("userPromo : "+new Gson().toJson(userPromo));
+//                user.setUserPromo(userPromo);
+////                userRepository.update(user);
+//                return userRepository.getById(user.getId()).getUserPromo();
+//            }else{
+//                return null;
+//            }
+//        }else if(refCodeReward != null && user.getUserPromo() == null){
+////            user.getUserPromo() == null this check means the orderFirst == false
+//            //System.out.println("ELSE IF");
+//            UserPromo userPromo = new UserPromo();
+//            userPromo = updateUserPromoWithRefCodeReward(userPromo, refCodeReward);
+//            user.setUserPromo(userPromo);
+//            userRepository.update(user);
+//
+//            return userRepository.getById(user.getId()).getUserPromo();
+////        If Yes Check First Order or Not //
+////        Update UserPromo Data //
+////        IF First make first order false //When Order
+////        Give Reward Who referred // When Order
+//        }else{
+//            //System.out.println("ELSE");
+//            return null;
+//        }
+////        Promotion promotion =  promotionRepository.applyPromotion(code);
+////        List<Promotion> promotionLists = new Gson().fromJson(promotion.getPromotion(), List.class);
+////        return null;
+        return null;
     }
 
     @SneakyThrows

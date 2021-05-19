@@ -1,14 +1,20 @@
 package me.tapumandal.jewellery.service;
 
+import me.tapumandal.jewellery.entity.ListFilter;
 import me.tapumandal.jewellery.entity.User;
 import me.tapumandal.jewellery.entity.dto.ConsumerUserDto;
 import me.tapumandal.jewellery.entity.dto.UserDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-public interface UserService extends Service<User, ConsumerUserDto>{
+import java.util.List;
+
+public interface UserService extends Service<User, User>{
 
     public boolean isUserExist(String userName);
-    public ConsumerUserDto createUser(User user);
-    public ConsumerUserDto createAdminAccount(User user);
-    public ConsumerUserDto getUserByUserName(String username);
+    public User createUser(User user);
+    public User createAdminAccount(User user);
+    public User getUserByUserName(String username);
+    public Page<User> getAllPageable(Pageable pageable);
 
 }

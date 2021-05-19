@@ -87,7 +87,13 @@ public class User {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private List<Address> addresses = new ArrayList<Address>();
 
+    private String phone;
+
     public User(User user) {
+
+    }
+
+    public User() {
 
     }
 
@@ -98,4 +104,5 @@ public class User {
 //    @OneToOne(cascade = CascadeType.ALL)
 //    @JoinColumn(name = "user_promo_id", referencedColumnName = "id")
 //    private UserPromo userPromo;
+
 }

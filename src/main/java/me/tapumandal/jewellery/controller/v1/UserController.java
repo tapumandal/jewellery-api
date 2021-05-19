@@ -7,6 +7,7 @@ import me.tapumandal.jewellery.entity.ListFilter;
 import me.tapumandal.jewellery.entity.User;
 import me.tapumandal.jewellery.service.MyUserDetailsService;
 import me.tapumandal.jewellery.service.UserService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -43,6 +44,9 @@ public class UserController extends ControllerHelper {
     @Autowired
     UserService userService;
 
+    @Autowired
+    ModelMapper modelMapper;
+
     @PostMapping("/authenticate")
     public ResponseEntity<LoginResponseModelConsumer> authenticate(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
 
@@ -58,7 +62,7 @@ public class UserController extends ControllerHelper {
 
         LoginResponseModelConsumer loginResponseModel = new LoginResponseModelConsumer();
         loginResponseModel.setJwt(jwtUtil.generateToken(userDetails));
-        loginResponseModel.setUser(userService.getUserByUserName(userDetails.getUsername()));
+//        loginResponseModel.setUser(userService.getUserByUserName(userDetails.getUsername()));
 
         return ResponseEntity.ok(loginResponseModel);
     }
@@ -76,7 +80,7 @@ public class UserController extends ControllerHelper {
 //                return response(false, HttpStatus.BAD_REQUEST, "Please check your company information.", (User) null);
 //            }
 //            User user = userService.createUser(u);
-            ConsumerUserDto user = userService.createAdminAccount(u);
+            User user = userService.createAdminAccount(u);
 
             if (user != null) {
                 return response(true, HttpStatus.CREATED, "User & Company registration successful", user);
@@ -97,7 +101,7 @@ public class UserController extends ControllerHelper {
         if (!userService.isUserExist(u.getUsername())) {
 
 //            u.setCompany(null);
-            ConsumerUserDto user = userService.createUser(u);
+            User user = userService.createUser(u);
 
             if (user != null) {
                 return response(true, HttpStatus.CREATED, "User & Company registration successful", user);
@@ -115,7 +119,7 @@ public class UserController extends ControllerHelper {
 
         storeUserDetails(request);
 
-        ConsumerUserDto user = userService.getById(id);
+        User user = userService.getById(id);
 
         if (user != null) {
             return response(true, HttpStatus.FOUND, "User by id: " + id, user);
@@ -131,7 +135,7 @@ public class UserController extends ControllerHelper {
 
         storeUserDetails(request);
 
-        List<ConsumerUserDto> products = userService.getAll(pageable, listFilter);
+        List<User> products = userService.getAll(pageable, listFilter);
 
         MyPagenation myPagenation = managePagenation(request, userService.getAllEntityCount(pageable, listFilter), pageable);
 
@@ -150,7 +154,7 @@ public class UserController extends ControllerHelper {
 
         storeUserDetails(request);
 
-        ConsumerUserDto user = userService.update(u);
+        User user = userService.update(u);
 
         if (user != null) {
             return response(true, HttpStatus.OK, "New user inserted successfully", user);
@@ -181,7 +185,6 @@ public class UserController extends ControllerHelper {
     public String admin() {
         return ("<h1>Welcome Admin</h1>");
     }
-
 
     private boolean validateFirebaseTokenID(String tokenID) {
         if(tokenID != null && tokenID.length() > 10){
@@ -218,7 +221,7 @@ public class UserController extends ControllerHelper {
         u.setRole("CONSUMER");
 
         if (!userService.isUserExist(u.getUsername())) {
-            ConsumerUserDto cUserDto = userService.createUser(u);
+            User cUserDto = userService.createUser(u);
 
             try {
                 //System.out.println("3");
@@ -235,7 +238,7 @@ public class UserController extends ControllerHelper {
             //System.out.println("JWT: "+jwtUtil.generateToken(userDetails));
             LoginResponseModelConsumer loginResponseModel = new LoginResponseModelConsumer();
             loginResponseModel.setJwt(jwtUtil.generateToken(userDetails));
-            loginResponseModel.setUser(userService.getUserByUserName(userDetails.getUsername()));
+//            loginResponseModel.setUser(userService.getUserByUserName(userDetails.getUsername()));
             //System.out.println("6");
             return response(true, HttpStatus.OK, "Registration is successful", loginResponseModel);
 
@@ -264,7 +267,7 @@ public class UserController extends ControllerHelper {
 
         LoginResponseModelConsumer loginResponseModel = new LoginResponseModelConsumer();
         loginResponseModel.setJwt(jwtUtil.generateToken(userDetails));
-        loginResponseModel.setUser(userService.getUserByUserName(userDetails.getUsername()));
+//        loginResponseModel.setUser(userService.getUserByUserName(userDetails.getUsername()));
         //System.out.println("LOGIN CONTROLELR: "+new Gson().toJson(userService.getUserByUserName(userDetails.getUsername())));
 
         return response(true, HttpStatus.OK, "Login is successful", loginResponseModel);
@@ -277,7 +280,7 @@ public class UserController extends ControllerHelper {
         //System.out.println("CONTROLLER ADDRESS DTO: "+new Gson().toJson(u));
         storeUserDetails(request);
 
-        ConsumerUserDto user = userService.update(u);
+        User user = userService.update(u);
         //System.out.println("CONTROLLER ADDRESS RETURN: "+new Gson().toJson(u));
         if (user != null) {
             return response(true, HttpStatus.OK, "New user inserted successfully", user);
@@ -293,7 +296,7 @@ public class UserController extends ControllerHelper {
         storeUserDetails(request);
 
         int userId = ApplicationPreferences.getUser().getId();
-        ConsumerUserDto user = userService.getById(userId);
+        User user = userService.getById(userId);
         //System.out.println("CONTROLLER MY PROFILE: "+new Gson().toJson(user));
         if (user != null) {
             return response(true, HttpStatus.OK, "New user inserted successfully", user);
@@ -301,5 +304,10 @@ public class UserController extends ControllerHelper {
             return response(false, HttpStatus.BAD_REQUEST, "Something is wrong with data", (User) null);
         }
         return response(false, HttpStatus.INTERNAL_SERVER_ERROR, "Something is wrong with the application", (User) null);
+    }
+
+    private ConsumerUserDto convertToDto(User user) {
+        ConsumerUserDto consumerUserDto = modelMapper.map(user, ConsumerUserDto.class);
+        return consumerUserDto;
     }
 }
