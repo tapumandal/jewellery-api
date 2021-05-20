@@ -1,5 +1,6 @@
 package me.tapumandal.jewellery.controller.v1;
 
+import com.google.gson.Gson;
 import me.tapumandal.jewellery.entity.LoginResponseModelConsumer;
 import me.tapumandal.jewellery.entity.dto.ConsumerUserDto;
 import me.tapumandal.jewellery.util.*;
@@ -19,7 +20,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import me.tapumandal.jewellery.entity.LoginResponseModel;
 import me.tapumandal.jewellery.entity.dto.AuthenticationRequest;
-import me.tapumandal.jewellery.entity.User;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -101,13 +101,13 @@ public class UserController extends ControllerHelper {
         if (!userService.isUserExist(u.getUsername())) {
 
 //            u.setCompany(null);
-            User user = userService.createUser(u);
+//            User user = userService.createUser(u);
 
-            if (user != null) {
-                return response(true, HttpStatus.CREATED, "User & Company registration successful", user);
-            } else {
+//            if (user != null) {
+//                return response(true, HttpStatus.CREATED, "User & Company registration successful", user);
+//            } else {
                 return response(false, HttpStatus.BAD_REQUEST, "Something is wrong please contact.", (User) null);
-            }
+//            }
 
         } else {
             return response(false, HttpStatus.NOT_ACCEPTABLE, "User already exist", (User) null);
@@ -216,35 +216,16 @@ public class UserController extends ControllerHelper {
     }
 
     @PostMapping(path = "consumer/registration")
-    public CommonResponseSingle<LoginResponseModel> consumerRegistration(@RequestBody @Valid User u, HttpServletRequest request) throws Exception  {
+    public ResponseEntity<LoginResponseModelConsumer> consumerRegistration(@RequestBody User u, HttpServletRequest request) throws Exception  {
 
         u.setRole("CONSUMER");
+        System.out.println(new Gson().toJson(u));
 
         if (!userService.isUserExist(u.getUsername())) {
-            User cUserDto = userService.createUser(u);
-
-            try {
-                //System.out.println("3");
-                authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(cUserDto.getUsername(), CONSUMER_USER_PASSWORD)
-                );
-            } catch (BadCredentialsException e) {
-                //System.out.println("4");
-                throw new Exception("Incorrect username or tokenId", e);
-            }
-            //System.out.println("5");
-            userDetails = myuserDetailsService.loadUserByUsername(cUserDto.getUsername());
-            //System.out.println("USER DETAILS: "+new Gson().toJson(userDetails));
-            //System.out.println("JWT: "+jwtUtil.generateToken(userDetails));
-            LoginResponseModelConsumer loginResponseModel = new LoginResponseModelConsumer();
-            loginResponseModel.setJwt(jwtUtil.generateToken(userDetails));
-//            loginResponseModel.setUser(userService.getUserByUserName(userDetails.getUsername()));
-            //System.out.println("6");
-            return response(true, HttpStatus.OK, "Registration is successful", loginResponseModel);
-
+            LoginResponseModelConsumer loginResponseModel = userService.createUser(u);
+            return ResponseEntity.ok(loginResponseModel);
         } else {
-            //System.out.println("7");
-            return response(false, HttpStatus.BAD_REQUEST, "The account is already exist. \n Please login.", (LoginResponseModel) null);
+            return (ResponseEntity<LoginResponseModelConsumer>) ResponseEntity.badRequest();
         }
     }
 

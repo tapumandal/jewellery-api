@@ -1,13 +1,23 @@
 package me.tapumandal.jewellery.service.implementation;
 
+import me.tapumandal.jewellery.entity.LoginResponseModel;
+import me.tapumandal.jewellery.entity.LoginResponseModelConsumer;
 import me.tapumandal.jewellery.entity.User;
+import me.tapumandal.jewellery.entity.dto.ConsumerUserDto;
 import me.tapumandal.jewellery.repository.RefCodeRepository;
 import me.tapumandal.jewellery.repository.UserRepository;
+import me.tapumandal.jewellery.service.MyUserDetailsService;
 import me.tapumandal.jewellery.util.ApplicationPreferences;
+import me.tapumandal.jewellery.util.JwtUtil;
 import me.tapumandal.jewellery.util.MyPagenation;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import me.tapumandal.jewellery.domain.address.AddressRepository;
 import me.tapumandal.jewellery.entity.ListFilter;
@@ -41,6 +51,21 @@ public class UserServiceImpl implements UserService {
     @Autowired
     RefCodeRepository refCodeRepository;
 
+    @Autowired
+    AuthenticationManager authenticationManager;
+
+    @Autowired
+    MyUserDetailsService myuserDetailsService;
+
+    @Autowired
+    UserDetails userDetails;
+
+    @Autowired
+    JwtUtil jwtUtil;
+
+    @Autowired
+    ModelMapper modelMapper;
+
     private User user;
 
     public UserServiceImpl(){}
@@ -51,16 +76,29 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public User createUser(User user) {
+    public LoginResponseModelConsumer createUser(User user) {
 
-//        True for ecommerce fron app.
-//        Make it conditional when mobile app is ready
+        user.setRole("CONSUMER");
+        user.setWorkTitle("CONSUMER");
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setActive(true);
+        user = this.checkUsernameType(user);
 
-        return createUserAccount(user);
-//        if(userDto.getUserTokenId() != null){
-//        }else{
-//            return createAdminAccount(user);
-//        }
+
+        userRepository.save(user);
+        applicationPreferences.saveUserByUsername(user.getUsername());
+
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+        } catch (BadCredentialsException e) {
+
+        }
+        userDetails = myuserDetailsService.loadUserByUsername(user.getUsername());
+        LoginResponseModelConsumer loginResponseModel = new LoginResponseModelConsumer();
+        loginResponseModel.setJwt(jwtUtil.generateToken(userDetails));
+        loginResponseModel.setUser(convertToDto(user));
+
+        return loginResponseModel;
     }
 
     @Override
@@ -300,5 +338,11 @@ public class UserServiceImpl implements UserService {
 //            }
         }
         return u;
+    }
+
+
+    private ConsumerUserDto convertToDto(User user) {
+        ConsumerUserDto consumerUserDto = modelMapper.map(user, ConsumerUserDto.class);
+        return consumerUserDto;
     }
 }

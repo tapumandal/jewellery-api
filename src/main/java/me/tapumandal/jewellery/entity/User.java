@@ -23,8 +23,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    protected int id;
-
+    protected int id = 0;
 
     @Column(name = "first_name")
     @NotNull(message = "First Name can't be empty")
