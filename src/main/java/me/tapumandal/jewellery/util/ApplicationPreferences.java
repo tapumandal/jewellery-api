@@ -19,7 +19,7 @@ public class ApplicationPreferences {
     private static User user;
 
     public void saveUserByUsername(String username) {
-        User u = userService.getByValue("username", username);
+        User u = userService.getUserByUserName(username);
         preferences = Preferences.userRoot().node(this.getClass().getName());
         preferences.put("firstName", u.getFirstName());
         preferences.put("lastName", u.getLastName());

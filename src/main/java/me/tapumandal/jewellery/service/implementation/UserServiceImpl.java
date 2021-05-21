@@ -1,5 +1,6 @@
 package me.tapumandal.jewellery.service.implementation;
 
+import com.google.gson.Gson;
 import me.tapumandal.jewellery.entity.LoginResponseModel;
 import me.tapumandal.jewellery.entity.LoginResponseModelConsumer;
 import me.tapumandal.jewellery.entity.User;

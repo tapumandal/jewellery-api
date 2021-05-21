@@ -38,7 +38,7 @@ public class User {
     protected String email;
 
     @Column(name = "phone_number_code")
-    protected String phoneNumberCode;
+    protected String phoneNumberCode = "880";
 
     @Column(name = "phone_number")
     protected String phoneNumber;
@@ -55,9 +55,9 @@ public class User {
     @Column(name = "gender")
     protected String gender;
 
+    //    @Size(min=6, max = 32, message = "Password size must be between 6 and 32 character.")
     @Column(name = "password")
     @NotNull(message = "password No can't be empty")
-    @Size(min=6, max = 32, message = "Password size must be between 6 and 32 character.")
     protected String password;
 
     @Column(name = "work_title")
