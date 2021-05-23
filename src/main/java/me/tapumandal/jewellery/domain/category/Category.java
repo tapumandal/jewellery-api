@@ -1,6 +1,8 @@
 package me.tapumandal.jewellery.domain.category;
 
 import javax.persistence.*;
+
+import com.sun.istack.Nullable;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.stereotype.Component;
@@ -28,10 +30,12 @@ public class Category {
 
     @Column(name = "created_at", updatable=false)
     @CreationTimestamp
+    @Nullable
     private Date createdAt;
 
     @Column(name = "updated_at")
     @UpdateTimestamp
+    @Nullable
     private Date updatedAt;
 
     public Category(){}

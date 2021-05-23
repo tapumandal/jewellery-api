@@ -1,17 +1,17 @@
 package me.tapumandal.jewellery.domain.category;
 
-import me.tapumandal.jewellery.entity.ListFilter;
-import me.tapumandal.jewellery.util.CommonResponseArray;
-import me.tapumandal.jewellery.util.CommonResponseSingle;
 import me.tapumandal.jewellery.util.ControllerHelper;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -21,81 +21,80 @@ public class CategoryController extends ControllerHelper<Category> {
     @Autowired
     CategoryService categoryService;
 
+    @Autowired
+    ModelMapper modelMapper;
+
     @PostMapping(path = "/create")
-    public CommonResponseSingle createCompany(@ModelAttribute CategoryDto categoryDto, HttpServletRequest request) {
+    public ResponseEntity<CategoryDto> createCategory(@ModelAttribute Category c, HttpServletRequest request) {
 
         storeUserDetails(request);
 
-        Category category = categoryService.create(categoryDto);
+        Category category = categoryService.create(c);
 
         if (category != null) {
-            return response(true, HttpStatus.CREATED, "New category inserted successfully", category);
-        } else if (category == null) {
-            return response(false, HttpStatus.BAD_REQUEST, "Something is wrong please contact", (Category) null);
+            return ResponseEntity.ok(convertToDto(category));
+        } else{
+            return (ResponseEntity<CategoryDto>) ResponseEntity.badRequest();
         }
-        return response(false, HttpStatus.INTERNAL_SERVER_ERROR, "Something is wrong with the application", (Category) null);
     }
 
     @GetMapping(path = "/{id}")
-    public CommonResponseSingle<Category> getCompany(@PathVariable("id") int id, HttpServletRequest request) {
+    public ResponseEntity<CategoryDto> getCompany(@PathVariable("id") int id, HttpServletRequest request) {
 
         storeUserDetails(request);
 
         Category category = categoryService.getById(id);
 
         if (category != null) {
-            return response(true, HttpStatus.FOUND, "Company by id: " + id, category);
-        } else if (category == null) {
-            return response(false, HttpStatus.NO_CONTENT, "Company not found or deleted", (Category) null);
-        } else {
-            return response(false, HttpStatus.INTERNAL_SERVER_ERROR, "Something is wrong", (Category) null);
+            return ResponseEntity.ok(convertToDto(category));
+        } else{
+            return (ResponseEntity<CategoryDto>) ResponseEntity.badRequest();
         }
     }
 
     @GetMapping(path = "/list")
-    public CommonResponseArray<Category> getAll(@ModelAttribute ListFilter listFilter, HttpServletRequest request, Pageable pageable) {
+    public ResponseEntity<List<CategoryDto>> getAll(HttpServletRequest request) {
 
         storeUserDetails(request);
 
-        List<Category> categorys = categoryService.getAll(pageable, listFilter);
-//        MyPagenation myPagenation = managePagenation(request, categoryService.getPageable(pageable), pageable);
+        List<Category> categorys = categoryService.getAll();
+
+        List<CategoryDto> responseEntity =  categorys.stream().map(this::convertToDto).collect(Collectors.toList());
 
         if (!categorys.isEmpty()) {
-            return response(true, HttpStatus.FOUND, "All category list", categorys);
-        } else if (categorys.isEmpty()) {
-            return response(false, HttpStatus.NO_CONTENT, "No category found", new ArrayList<Category>());
-        } else {
-            return response(false, HttpStatus.INTERNAL_SERVER_ERROR, "Something is wrong", new ArrayList<Category>());
+            return ResponseEntity.ok(responseEntity);
+        } else{
+            return (ResponseEntity<List<CategoryDto>>) ResponseEntity.badRequest();
         }
-
     }
 
 
     @PostMapping(path = "/update")
-    public CommonResponseSingle updateCompany(@RequestBody CategoryDto categoryDto, HttpServletRequest request) {
+    public ResponseEntity update(@RequestBody Category entity, HttpServletRequest request) {
 
         storeUserDetails(request);
 
-        Category category = categoryService.update(categoryDto);
+        Category category = categoryService.update(entity);
 
         if (category != null) {
-            return response(true, HttpStatus.OK, "New category inserted successfully", category);
-        } else if (category == null) {
-            return response(false, HttpStatus.BAD_REQUEST, "Something is wrong with data", (Category) null);
+            return ResponseEntity.ok(convertToDto(category));
+        } else{
+            return (ResponseEntity<CategoryDto>) ResponseEntity.badRequest();
         }
-        return response(false, HttpStatus.INTERNAL_SERVER_ERROR, "Something is wrong with the application", (Category) null);
     }
 
     @DeleteMapping(path = "/{id}")
-    public CommonResponseSingle<Category> deleteCompany(@PathVariable("id") int id, HttpServletRequest request) {
+    public ResponseEntity delete(@PathVariable("id") int id, HttpServletRequest request) {
 
         storeUserDetails(request);
+        return (ResponseEntity) ResponseEntity.ok();
+    }
 
-        if (categoryService.deleteById(id)) {
-            return response(true, HttpStatus.OK, "Company by id " + id + " is deleted", (Category) null);
-        } else{
-            return response(false, HttpStatus.NOT_FOUND, "Company not found or deleted", (Category) null);
-        }
+
+
+    private CategoryDto convertToDto(Category entity) {
+        CategoryDto dto = modelMapper.map(entity, CategoryDto.class);
+        return dto;
     }
 
 }

@@ -24,17 +24,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Category create(CategoryDto categoryDto) {
+    public Category create(Category entity) {
 
-        Category pro = new Category(categoryDto);
         Optional<Category> category;
 
-//        try{
-            int categoryId = categoryRepository.create(pro);
-            category = Optional.ofNullable(categoryRepository.getById(categoryId));
-//        }catch (Exception e){
-//            return null;
-//        }
+        category = Optional.ofNullable(categoryRepository.save(entity));
 
         if(category.isPresent()){
             return category.get();
@@ -44,18 +38,10 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Category update(CategoryDto categoryDto) {
-
-
-        Category pro = new Category(categoryDto);
+    public Category update(Category entity) {
 
         Optional<Category> category;
-//        try{
-            int proId = categoryRepository.update(pro);
-            category = Optional.ofNullable(categoryRepository.getById(proId));
-//        }catch (Exception e){
-//            return null;
-//        }
+        category = Optional.ofNullable(categoryRepository.save(entity));
 
         if(category.isPresent()){
             return category.get();
@@ -67,10 +53,15 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<Category> getAll(Pageable pageable, ListFilter listFilter) {
-        Optional<List<Category>> categorys = Optional.ofNullable(categoryRepository.getAll(pageable, listFilter));
+        return null;
+    }
 
-        if(categorys.isPresent()){
-            return categorys.get();
+    @Override
+    public List<Category> getAll() {
+        Optional<List<Category>> categories = Optional.ofNullable(categoryRepository.findAllActive());
+
+        if(categories.isPresent()){
+            return categories.get();
         }else{
             return null;
         }
@@ -79,7 +70,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Category getById(int id) {
 
-        Optional<Category> category = Optional.ofNullable(categoryRepository.getById(id));
+        Optional<Category> category = categoryRepository.findById(id);
 
         if(category.isPresent()){
             return category.get();
@@ -91,10 +82,12 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public boolean deleteById(int id) {
         try {
-            return categoryRepository.delete(id);
+            categoryRepository.deleteById(id);
         }catch (Exception ex){
             return false;
         }
+
+        return true;
     }
 
     @Override
@@ -109,7 +102,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public boolean isActive(int id) {
-        Optional<Category> category = Optional.ofNullable(categoryRepository.getById(id));
+        Optional<Category> category = categoryRepository.findById(id);
         if(category.isPresent()){
             if(category.get().isActive()){
                 return true;
