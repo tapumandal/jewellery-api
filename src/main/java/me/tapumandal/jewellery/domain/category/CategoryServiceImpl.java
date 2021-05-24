@@ -58,7 +58,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<Category> getAll() {
-        Optional<List<Category>> categories = Optional.ofNullable(categoryRepository.findAllActive());
+        Optional<List<Category>> categories = Optional.ofNullable(categoryRepository.findAll());
 
         if(categories.isPresent()){
             return categories.get();

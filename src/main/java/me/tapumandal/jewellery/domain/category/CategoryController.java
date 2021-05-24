@@ -1,5 +1,6 @@
 package me.tapumandal.jewellery.domain.category;
 
+import com.google.gson.Gson;
 import me.tapumandal.jewellery.util.ControllerHelper;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,19 +54,15 @@ public class CategoryController extends ControllerHelper<Category> {
     }
 
     @GetMapping(path = "/list")
-    public ResponseEntity<List<CategoryDto>> getAll(HttpServletRequest request) {
+    public ResponseEntity getAll(HttpServletRequest request) {
 
         storeUserDetails(request);
 
-        List<Category> categorys = categoryService.getAll();
+        List<Category> categories = categoryService.getAll();
 
-        List<CategoryDto> responseEntity =  categorys.stream().map(this::convertToDto).collect(Collectors.toList());
+        List<CategoryDto> responseEntity =  categories.stream().map(this::convertToDto).collect(Collectors.toList());
 
-        if (!categorys.isEmpty()) {
-            return ResponseEntity.ok(responseEntity);
-        } else{
-            return (ResponseEntity<List<CategoryDto>>) ResponseEntity.badRequest();
-        }
+        return ResponseEntity.ok(responseEntity);
     }
 
 
@@ -87,6 +84,7 @@ public class CategoryController extends ControllerHelper<Category> {
     public ResponseEntity delete(@PathVariable("id") int id, HttpServletRequest request) {
 
         storeUserDetails(request);
+        categoryService.deleteById(id);
         return (ResponseEntity) ResponseEntity.ok();
     }
 
