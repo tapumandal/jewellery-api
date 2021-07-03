@@ -109,7 +109,7 @@ public class ControllerHelper<Entity> {
         }else{
 
             String authorizationHeader = request.getHeader("Authorization");
-            if(!authorizationHeader.isEmpty()) {
+            if(!authorizationHeader.isEmpty() && authorizationHeader.length() >10) {
                 String token = authorizationHeader.substring(7);
                 String username = getUserNameJWT(token);
                 applicationPreferences.saveUserByUsername(username);

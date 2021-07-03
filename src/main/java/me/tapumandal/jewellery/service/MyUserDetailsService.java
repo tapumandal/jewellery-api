@@ -1,5 +1,6 @@
 package me.tapumandal.jewellery.service;
 
+import com.google.gson.Gson;
 import me.tapumandal.jewellery.repository.UserRepository;
 import me.tapumandal.jewellery.repository.implementation.UserRepositoryImpl;
 import me.tapumandal.jewellery.entity.MyUserDetails;
@@ -23,7 +24,6 @@ public class MyUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
         User user = userService.getUserByUserName(username);
         if(userService.isActive(user.getId())){
             return new MyUserDetails(user);

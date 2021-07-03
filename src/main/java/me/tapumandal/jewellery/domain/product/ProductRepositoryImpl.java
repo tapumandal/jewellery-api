@@ -68,7 +68,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<ProductBusiness> getAllBusiness(Pageable pageable, String flag, String selectedParentMenu) {
         flag = flag.trim();
-        String query = "FROM ProductBusiness P WHERE P.quantity > 0 AND P.isDeleted = 0 AND (P.categories LIKE '%"+selectedParentMenu+"%' OR P.company LIKE '%"+selectedParentMenu+"%') AND (P.categories LIKE '%"+flag+"%' OR P.company LIKE '%"+flag+"%')  ORDER BY P.sortPriority DESC, P.unit DESC, P.name ASC";
+        String query = "FROM ProductBusiness P WHERE P.isDeleted = 0 AND P.categories LIKE '%"+selectedParentMenu+"%' ORDER BY P.sortPriority DESC, P.unit DESC, P.name ASC";
         Query resQuery =  getSession().createQuery(query);
 
         return getFromDB(pageable, resQuery).getResultList();
@@ -158,6 +158,13 @@ public class ProductRepositoryImpl implements ProductRepository {
     public Product getById(int id) {
 
         String query = "FROM Product P WHERE P.id = "+id+" AND P.isDeleted = 0";
+        return (Product) getSession().createQuery(query).uniqueResult();
+    }
+
+    @Override
+    public Product getByName(String name) {
+
+        String query = "FROM Product P WHERE P.name = '"+name+"' AND P.isDeleted = 0";
         return (Product) getSession().createQuery(query).uniqueResult();
     }
 

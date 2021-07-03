@@ -47,53 +47,29 @@ public class UserController extends ControllerHelper {
     @Autowired
     ModelMapper modelMapper;
 
-    @PostMapping("/authenticate")
+    @PostMapping("admin/authenticate")
     public ResponseEntity<LoginResponseModelConsumer> authenticate(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
-
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword())
-            );
-        } catch (BadCredentialsException e) {
-            throw new Exception("Incorrect username or password", e);
-        }
-
-        userDetails = myuserDetailsService.loadUserByUsername(authenticationRequest.getUsername().toString());
-
-        LoginResponseModelConsumer loginResponseModel = new LoginResponseModelConsumer();
-        loginResponseModel.setJwt(jwtUtil.generateToken(userDetails));
-//        loginResponseModel.setUser(userService.getUserByUserName(userDetails.getUsername()));
-
+        LoginResponseModelConsumer loginResponseModel = userService.adminAuthenticate(authenticationRequest);
         return ResponseEntity.ok(loginResponseModel);
+
     }
 
-    @GetMapping("/")
-    public String home() {
-        return ("<h1>This is the Home Page. </h1> <span>Site is under construction.<span>");
-    }
+    @PostMapping(path = "admin/registration")
+    public ResponseEntity<LoginResponseModelConsumer> adminRegistration(@RequestBody User u, HttpServletRequest request) throws Exception  {
 
-    @PostMapping(path = "/registration")
-    public CommonResponseSingle userRegistration(@RequestBody @Valid User u, HttpServletRequest request) {
+        u.setRole("Admin");
+        System.out.println(new Gson().toJson(u));
 
         if (!userService.isUserExist(u.getUsername())) {
-//            if (u.getCompany().getId() != 0) {
-//                return response(false, HttpStatus.BAD_REQUEST, "Please check your company information.", (User) null);
-//            }
-//            User user = userService.createUser(u);
-            User user = userService.createAdminAccount(u);
-
-            if (user != null) {
-                return response(true, HttpStatus.CREATED, "User & Company registration successful", user);
-            } else {
-                return response(false, HttpStatus.BAD_REQUEST, "Something is wrong please contact.", (User) null);
-            }
-
+            LoginResponseModelConsumer loginResponseModel = userService.createAdminAccount(u);
+            System.out.println(new Gson().toJson(loginResponseModel));
+            return ResponseEntity.ok(loginResponseModel);
         } else {
-            return response(false, HttpStatus.NOT_ACCEPTABLE, "User already exist", (User) null);
+            return (ResponseEntity<LoginResponseModelConsumer>) ResponseEntity.badRequest();
         }
     }
 
-    @PostMapping(path = "/user/create")
+    @PostMapping(path = "user/create")
     public CommonResponseSingle userCreate(@RequestBody @Valid User u, HttpServletRequest request) {
 
         storeUserDetails(request);
@@ -176,45 +152,6 @@ public class UserController extends ControllerHelper {
         }
     }
 
-    @GetMapping("/user")
-    public String user() {
-        return ("<h1>Welcome User</h1>");
-    }
-
-    @GetMapping("/admin")
-    public String admin() {
-        return ("<h1>Welcome Admin</h1>");
-    }
-
-    private boolean validateFirebaseTokenID(String tokenID) {
-        if(tokenID != null && tokenID.length() > 10){
-            return true;
-        }else{
-            return false;
-        }
-//        FirebaseOptions options = null;
-//        try {
-//            options = FirebaseOptions.builder()
-//                    .setCredentials(GoogleCredentials.getApplicationDefault())
-//                    .setDatabaseUrl("https://grocery-ecommerce-845b8.firebaseio.com/")
-//                    .build();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        FirebaseApp.initializeApp(options);
-//
-//        FirebaseToken decodedToken = null;
-//        try {
-//            decodedToken = FirebaseAuth.getInstance().verifyIdToken(u.getUserTokenId());
-//        } catch (FirebaseAuthException e) {
-//            e.printStackTrace();
-//        }
-//        String uid = decodedToken.getUid();
-//        System.out.println("Firebase Authentication: "+uid);
-
-    }
-
     @PostMapping(path = "consumer/registration")
     public ResponseEntity<LoginResponseModelConsumer> consumerRegistration(@RequestBody User u, HttpServletRequest request) throws Exception  {
 
@@ -231,10 +168,6 @@ public class UserController extends ControllerHelper {
 
     @PostMapping("consumer/authenticate")
     public CommonResponseSingle<LoginResponseModel> consumerAuthenticate(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
-
-        if(!validateFirebaseTokenID(authenticationRequest.getUserTokenId())){
-            return response(false, HttpStatus.BAD_REQUEST, "This is not a valid request.", (LoginResponseModel) null);
-        }
 
         try {
             authenticationManager.authenticate(

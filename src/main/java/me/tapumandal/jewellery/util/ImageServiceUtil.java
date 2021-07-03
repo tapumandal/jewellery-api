@@ -53,10 +53,10 @@ public class ImageServiceUtil {
             try {
                 Thumbnails.of(new File(productFileUploadDir+"/"+thumbnailName))
                         .outputFormat("JPEG")
-                        .size(180, 180)
+                        .size(210, 292)
                         .crop(Positions.CENTER)
                         .keepAspectRatio(true)
-                        .outputQuality(0.5)
+                        .outputQuality(0.6)
                         .toFiles(Rename.NO_CHANGE);
             } catch (IOException e) {
                 e.printStackTrace();

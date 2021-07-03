@@ -12,4 +12,6 @@ public interface ProductService extends Service<ProductDto, Product> {
 
     List<ProductBusiness> searchProduct(Pageable pageable, String query);
     public int searchProductEntityCount(Pageable pageable, String query);
+
+    public Product getByName(String name);
 }

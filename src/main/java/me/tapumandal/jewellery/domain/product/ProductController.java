@@ -1,5 +1,6 @@
 package me.tapumandal.jewellery.domain.product;
 
+import com.google.gson.Gson;
 import me.tapumandal.jewellery.entity.ListFilter;
 import me.tapumandal.jewellery.entity.dto.ListFilterDto;
 import me.tapumandal.jewellery.util.CommonResponseArray;
@@ -40,22 +41,6 @@ public class ProductController extends ControllerHelper<Product> {
             return ResponseEntity.ok(response(false, HttpStatus.BAD_REQUEST, "Something is wrong please contact", (Product) null));
         }
         return ResponseEntity.ok(response(false, HttpStatus.INTERNAL_SERVER_ERROR, "Something is wrong with the application", (Product) null));
-    }
-
-    @GetMapping(path = "/consumer/{id}")
-    public CommonResponseSingle<Product> getProduct(@PathVariable("id") int id, HttpServletRequest request) {
-
-        storeUserDetails(request);
-
-        Product product = productService.getById(id);
-
-        if (product != null) {
-            return response(true, HttpStatus.FOUND, "Product by id: " + id, product);
-        } else if (product == null) {
-            return response(false, HttpStatus.NO_CONTENT, "Product not found or deleted", (Product) null);
-        } else {
-            return response(false, HttpStatus.INTERNAL_SERVER_ERROR, "Something is wrong", (Product) null);
-        }
     }
 
     @GetMapping(path = "/list")
@@ -112,14 +97,48 @@ public class ProductController extends ControllerHelper<Product> {
         }
     }
 
+    @GetMapping(path = "/consumer/{id}")
+    public CommonResponseSingle<Product> getProduct(@PathVariable("id") int id, HttpServletRequest request) {
 
-    @GetMapping(path = "/consumer/list/{flag}/{selectedParentMenu}")
-    public ResponseEntity<CommonResponseArray<ProductBusiness>> getAllConsumer(@PathVariable("flag") String flag, @PathVariable("selectedParentMenu") String selectedParentMenu, HttpServletRequest request, Pageable pageable) {
-
-        //System.out.println("PControll: Child:"+flag+"< Parent:"+selectedParentMenu+"<");
         storeUserDetails(request);
 
+        Product product = productService.getById(id);
+
+        if (product != null) {
+            return response(true, HttpStatus.FOUND, "Product by id: " + id, product);
+        } else if (product == null) {
+            return response(false, HttpStatus.NO_CONTENT, "Product not found or deleted", (Product) null);
+        } else {
+            return response(false, HttpStatus.INTERNAL_SERVER_ERROR, "Something is wrong", (Product) null);
+        }
+    }
+
+    @GetMapping(path = "/consumer/name/{name}")
+    public CommonResponseSingle<Product> getProductByName(@PathVariable("name") String name, HttpServletRequest request) {
+
+        storeUserDetails(request);
+
+        Product product = productService.getByName(name);
+
+        if (product != null) {
+            return response(true, HttpStatus.FOUND, "Product by name: " + name, product);
+        } else if (product == null) {
+            return response(false, HttpStatus.NO_CONTENT, "Product not found or deleted", (Product) null);
+        } else {
+            return response(false, HttpStatus.INTERNAL_SERVER_ERROR, "Something is wrong", (Product) null);
+        }
+    }
+
+
+    @GetMapping(path = "/consumer/list/{flag}")
+    public ResponseEntity<CommonResponseArray<ProductBusiness>> getAllConsumer(@PathVariable("flag") String flag, HttpServletRequest request, Pageable pageable) {
+
+        System.out.println("PControll: Child:"+flag+"< Parent:"+flag+"<");
+        storeUserDetails(request);
+
+        String selectedParentMenu = flag;
         List<ProductBusiness> products = productService.getAllBusiness(pageable, flag, selectedParentMenu);
+        System.out.println(new Gson().toJson(products));
         MyPagenation myPagenation = managePagenation(request, productService.getAllBusinessEntityCount(pageable, flag), pageable);
 
         if (!products.isEmpty()) {

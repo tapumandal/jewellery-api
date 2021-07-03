@@ -152,6 +152,18 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public Product getByName(String name) {
+
+        Optional<Product> product = Optional.ofNullable(productRepository.getByName(name));
+
+        if(product.isPresent()){
+            return product.get();
+        }else{
+            return null;
+        }
+    }
+
+    @Override
     public boolean deleteById(int id) {
         try {
             return productRepository.delete(id);
@@ -210,22 +222,6 @@ public class ProductServiceImpl implements ProductService {
         flag = flag.replace("AND", "%");
 
         selectedParentMenu = selectedParentMenu.trim();
-
-        if(flag.isEmpty() || flag== null){
-            flag = selectedParentMenu;
-        }else if(selectedParentMenu.isEmpty() || selectedParentMenu == null){
-            selectedParentMenu = flag;
-        }
-
-        if(flag.equals("Ramadan")){
-            selectedParentMenu = "Ramadan";
-        }else if(flag.equals("Covid 19")){
-            selectedParentMenu = "Covid 19";
-        }else if(flag.equals("Popular")){
-            selectedParentMenu = "Popular";
-        }else if(flag.equals("Hot Deal")){
-            selectedParentMenu = "Hot Deal";
-        }
 
         Optional<List<ProductBusiness>> products = Optional.ofNullable(productRepository.getAllBusiness(pageable, flag, selectedParentMenu));
 

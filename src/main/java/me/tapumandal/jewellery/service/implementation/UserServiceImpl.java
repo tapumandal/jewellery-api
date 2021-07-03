@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import me.tapumandal.jewellery.entity.LoginResponseModel;
 import me.tapumandal.jewellery.entity.LoginResponseModelConsumer;
 import me.tapumandal.jewellery.entity.User;
+import me.tapumandal.jewellery.entity.dto.AuthenticationRequest;
 import me.tapumandal.jewellery.entity.dto.ConsumerUserDto;
 import me.tapumandal.jewellery.repository.RefCodeRepository;
 import me.tapumandal.jewellery.repository.UserRepository;
@@ -35,11 +36,8 @@ import java.util.regex.Pattern;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private static final String CONSUMER_USER_PASSWORD = "12345abcde!@#$%";
-
     @Autowired
     PasswordEncoder passwordEncoder;
-
     @Autowired
     UserRepository userRepository;
 
@@ -67,20 +65,18 @@ public class UserServiceImpl implements UserService {
     @Autowired
     ModelMapper modelMapper;
 
-    private User user;
-
     public UserServiceImpl(){}
 
-    public UserServiceImpl(User user){
-        this.user = user;
-    }
+//    public UserServiceImpl(User user){
+//        this.user = user;
+//    }
 
 
     @Override
     public LoginResponseModelConsumer createUser(User user) {
 
         user.setRole("CONSUMER");
-        user.setWorkTitle("CONSUMER");
+        user.setWorkTitle("Consumer");
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setActive(true);
         user = this.checkUsernameType(user);
@@ -103,20 +99,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User createAdminAccount(User utmp) {
+    public LoginResponseModelConsumer createAdminAccount(User user) {
 
-        User u = new User(utmp);
-        u.setRole("ADMIN");
-        u.setWorkTitle("Admin");
-        u.setPassword(passwordEncoder.encode(u.getPassword()));
-        u.setActive(false);
-        u = this.checkUsernameType(u);
+        String userInputPass = user.getPassword();
+
+        user.setRole("ADMIN");
+        user.setWorkTitle("Admin");
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setActive(true);
+        user.setUsername(user.getEmail());
+        user = this.checkUsernameType(user);
 
 
-        User user = userRepository.save(u);
-        applicationPreferences.saveUserByUsername(u.getUsername());
+        userRepository.save(user);
 
-        return user;
+        applicationPreferences.saveUserByUsername(user.getUsername());
+
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), userInputPass));
+        } catch (BadCredentialsException e) {
+            System.out.println("CATCH");
+        }
+        userDetails = myuserDetailsService.loadUserByUsername(user.getUsername());
+        LoginResponseModelConsumer loginResponseModel = new LoginResponseModelConsumer();
+        loginResponseModel.setJwt(jwtUtil.generateToken(userDetails));
+        loginResponseModel.setUser(convertToDto(user));
+        return loginResponseModel;
     }
 
     private User createUserAccount(User user) {
@@ -292,19 +300,24 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean isActive(int id) {
-        Optional<User> user = Optional.ofNullable(userRepository.findByIdIfActive(id));
+        System.out.println(id);
+        Optional<User> user = userRepository.findById(id);
         if(user.isPresent()){
+            System.out.println("PRESENT");
             if(user.get().isActive()){
+                System.out.println("ACTIVE");
                 return true;
             }
+            System.out.println("NOT A");
             return false;
         }
+        System.out.println("NOT PRESENT");
         return false;
     }
 
     @Override
     public boolean isDeleted(int id) {
-        return user.isDeleted();
+        return false;
     }
 
     @Override
@@ -319,8 +332,53 @@ public class UserServiceImpl implements UserService {
     }
 
     public boolean isUserExist(String userName){
-//        return userRepository.isUserExist(userName);
+
+        System.out.println(new Gson().toJson(userRepository.findByUsername(userName)));
+        User user  = userRepository.findByUsername(userName);
+        if(user != null){
+            return true;
+        }
         return false;
+    }
+
+    @Override
+    public LoginResponseModelConsumer adminAuthenticate(AuthenticationRequest authenticationRequest) {
+        User user = new User();
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword()));
+            user = userRepository.findByUsername(authenticationRequest.getUsername());
+        } catch (BadCredentialsException e) {
+
+        }
+
+        applicationPreferences.saveUserByUsername(user.getUsername());
+
+        userDetails = myuserDetailsService.loadUserByUsername(authenticationRequest.getUsername());
+        LoginResponseModelConsumer loginResponseModel = new LoginResponseModelConsumer();
+        loginResponseModel.setJwt(jwtUtil.generateToken(userDetails));
+        loginResponseModel.setUser(convertToDto(user));
+
+        return loginResponseModel;
+    }
+
+    @Override
+    public LoginResponseModelConsumer consumerAuthenticate(AuthenticationRequest authenticationRequest) {
+        User user = new User();
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword()));
+            user = userRepository.findByUsername(authenticationRequest.getUsername());
+        } catch (BadCredentialsException e) {
+
+        }
+
+        applicationPreferences.saveUserByUsername(user.getUsername());
+
+        userDetails = myuserDetailsService.loadUserByUsername(authenticationRequest.getUsername());
+        LoginResponseModelConsumer loginResponseModel = new LoginResponseModelConsumer();
+        loginResponseModel.setJwt(jwtUtil.generateToken(userDetails));
+        loginResponseModel.setUser(convertToDto(user));
+
+        return loginResponseModel;
     }
 
     protected User checkUsernameType(User u){

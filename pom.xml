@@ -155,7 +155,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<finalName>super-haat-api</finalName>
+					<finalName>jewellery-api</finalName>
 				</configuration>
 			</plugin>
 		</plugins>
